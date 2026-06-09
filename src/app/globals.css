@@ -69,3 +69,18 @@ body {
     var(--background);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+.field-input {
+  min-height: 2.5rem;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input);
+  background: var(--background);
+  padding: 0.5rem 0.75rem;
+  color: var(--foreground);
+  outline: none;
+}
+
+.field-input:focus {
+  box-shadow: 0 0 0 2px var(--ring);
+}
