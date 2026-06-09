@@ -9,13 +9,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "validate:fixtures": "tsx scripts/validate-creature-fixtures.ts"
+    "validate:fixtures": "tsx scripts/validate-creature-fixtures.ts",
+    "validate:mongo": "tsx scripts/validate-mongo-connection.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.2.4",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "0.545.0",
+    "mongoose": "9.7.0",
     "next": "15.5.19",
     "react": "19.2.3",
     "react-dom": "19.2.3",
