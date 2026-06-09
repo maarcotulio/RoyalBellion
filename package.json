@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "validate:fixtures": "tsx scripts/validate-creature-fixtures.ts",
     "validate:mongo": "tsx scripts/validate-mongo-connection.ts"
@@ -37,6 +38,7 @@
     "tailwindcss": "4.1.18",
     "tsx": "4.22.4",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.50.0"
+    "typescript-eslint": "8.50.0",
+    "vitest": "4.1.8"
   }
 }
