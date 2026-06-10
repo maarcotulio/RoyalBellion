@@ -1,4 +1,4 @@
-import { BookOpen, Dices, Plus, ScrollText, Shield, Swords, Upload } from "lucide-react";
+import { BookOpen, Dices, ScrollText, Shield, Swords, Upload } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -8,31 +8,20 @@ const modules = [
     icon: BookOpen,
     label: "Creature Library",
     description: "Browse, create, and import stat blocks.",
-    status: "Complete",
     href: "/library",
   },
   {
     icon: Dices,
     label: "Dice Engine",
     description: "Roll expressions with auditable breakdowns.",
-    status: "Complete",
     href: "/dice",
   },
   {
     icon: Shield,
     label: "Combat Table",
     description: "Run monster parties with combatant HP tracking.",
-    status: "Complete",
     href: "/combat",
   },
-] as const;
-
-const milestones = [
-  { id: "M0", label: "Foundation", status: "done" },
-  { id: "M1", label: "Creature library", status: "done" },
-  { id: "M2", label: "Dice + quick combat", status: "done" },
-  { id: "M3", label: "Encounters", status: "done" },
-  { id: "M4", label: "Visual polish", status: "done" },
 ] as const;
 
 export default function Home() {
@@ -97,46 +86,9 @@ export default function Home() {
               />
               <h2 className="mt-4 font-display text-xl font-semibold">{item.label}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
-              <p className="mt-4 font-mono text-sm text-primary">{item.status}</p>
             </Link>
           ))}
         </div>
-
-        <section className="mt-10 rounded-lg border border-border bg-card/60 p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-mono text-sm uppercase tracking-[0.18em] text-primary">
-                Roadmap
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-semibold">M0 through M4 shipped</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Core creature, dice, encounter, and interface work is complete.
-              </p>
-            </div>
-            <Button asChild variant="secondary">
-              <Link href="/creatures/new">
-                <Plus aria-hidden="true" />
-                New creature
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {milestones.map((milestone) => (
-              <span
-                key={milestone.id}
-                className={
-                  milestone.status === "done"
-                    ? "rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 font-mono text-xs text-primary"
-                    : milestone.status === "next"
-                      ? "rounded-md border border-accent/40 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent"
-                      : "rounded-md border border-border bg-background px-3 py-1.5 font-mono text-xs text-muted-foreground"
-                }
-              >
-                {milestone.id} {milestone.label}
-              </span>
-            ))}
-          </div>
-        </section>
       </section>
     </main>
   );
