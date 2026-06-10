@@ -52,14 +52,14 @@ function CreatureCard({ creature }: { readonly creature: Creature }) {
 
       <dl className="mt-5 grid grid-cols-3 gap-3 text-sm">
         <div>
-          <dt className="font-mono text-muted-foreground">AC</dt>
-          <dd className="mt-1 text-foreground">{creature.ac.value}</dd>
-        </div>
-        <div>
           <dt className="font-mono text-muted-foreground">HP</dt>
           <dd className="mt-1 text-foreground">
             {creature.hp.average} ({creature.hp.formula})
           </dd>
+        </div>
+        <div>
+          <dt className="font-mono text-muted-foreground">AC</dt>
+          <dd className="mt-1 text-foreground">{creature.ac.value}</dd>
         </div>
         <div>
           <dt className="font-mono text-muted-foreground">Actions</dt>
@@ -122,7 +122,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             <select
               name="type"
               defaultValue={filters.type}
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm capitalize outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 cursor-pointer rounded-md border border-input bg-background px-3 text-sm capitalize outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All</option>
               {CreatureTypeSchema.options.map((type) => (
@@ -137,7 +137,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             <select
               name="cr"
               defaultValue={filters.cr}
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 cursor-pointer rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All</option>
               {ChallengeRatingSchema.options.map((cr) => (

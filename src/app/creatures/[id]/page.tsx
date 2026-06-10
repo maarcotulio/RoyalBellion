@@ -78,8 +78,8 @@ function StatBlock({ creature }: { readonly creature: Creature }) {
       </div>
 
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
-        <Stat label="Armor Class" value={`${creature.ac.value}${creature.ac.type ? ` (${creature.ac.type})` : ""}`} />
         <Stat label="Hit Points" value={`${creature.hp.average} (${creature.hp.formula})`} />
+        <Stat label="Armor Class" value={`${creature.ac.value}${creature.ac.type ? ` (${creature.ac.type})` : ""}`} />
         <Stat
           label="Speed"
           value={Object.entries(creature.speed)
