@@ -1,4 +1,4 @@
-import { Plus, Swords } from "lucide-react";
+import { Plus, Sword, Swords } from "lucide-react";
 import Link from "next/link";
 
 import { BackLink } from "@/components/layout/back-link";
@@ -56,7 +56,7 @@ export default async function CombatPage() {
             ))
           ) : (
             <EmptyState
-              icon={Swords}
+              icon={Sword}
               title="No encounters yet"
               description="Build a monster party or try quick combat for a single attacker."
             >
