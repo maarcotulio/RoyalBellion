@@ -1,16 +1,16 @@
 services:
   mongo:
     image: mongo:8.2
-    container_name: bellion-mongo
+    container_name: royal-bellion-mongo
     restart: unless-stopped
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: bellion
-      MONGO_INITDB_ROOT_PASSWORD: bellion
-      MONGO_INITDB_DATABASE: bellion
+      MONGO_INITDB_ROOT_USERNAME: royal_bellion
+      MONGO_INITDB_ROOT_PASSWORD: royal_bellion
+      MONGO_INITDB_DATABASE: royal_bellion
     volumes:
-      - bellion-mongo-data:/data/db
+      - royal-bellion-mongo-data:/data/db
     healthcheck:
       test:
         [
@@ -18,9 +18,9 @@ services:
           "mongosh",
           "--quiet",
           "--username",
-          "bellion",
+          "royal_bellion",
           "--password",
-          "bellion",
+          "royal_bellion",
           "--authenticationDatabase",
           "admin",
           "--eval",
@@ -32,4 +32,4 @@ services:
       start_period: 15s
 
 volumes:
-  bellion-mongo-data:
+  royal-bellion-mongo-data:

@@ -1,6 +1,7 @@
 import mongoose, { type Mongoose } from "mongoose";
 
-const defaultMongoUri = "mongodb://bellion:bellion@127.0.0.1:27017/bellion?authSource=admin";
+const defaultMongoUri =
+  "mongodb://royal_bellion:royal_bellion@127.0.0.1:27017/royal_bellion?authSource=admin";
 
 type MongooseCache = {
   connection: Mongoose | null;
@@ -8,15 +9,15 @@ type MongooseCache = {
 };
 
 declare global {
-  var bellionMongooseCache: MongooseCache | undefined;
+  var royalBellionMongooseCache: MongooseCache | undefined;
 }
 
-const cache = globalThis.bellionMongooseCache ?? {
+const cache = globalThis.royalBellionMongooseCache ?? {
   connection: null,
   promise: null,
 };
 
-globalThis.bellionMongooseCache = cache;
+globalThis.royalBellionMongooseCache = cache;
 
 export function getMongoUri() {
   return process.env.MONGODB_URI ?? defaultMongoUri;
@@ -29,7 +30,7 @@ export async function connectToMongo() {
 
   if (!cache.promise) {
     cache.promise = mongoose.connect(getMongoUri(), {
-      dbName: process.env.MONGODB_DB ?? "bellion",
+      dbName: process.env.MONGODB_DB ?? "royal_bellion",
       serverSelectionTimeoutMS: 5_000,
     });
   }

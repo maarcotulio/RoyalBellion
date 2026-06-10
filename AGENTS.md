@@ -41,7 +41,7 @@ Run `pnpm lint`, `pnpm typecheck`, and relevant validation scripts before consid
 - `src/stores/`: client-side state stores.
 - `fixtures/`: checked-in data used for validation, examples, and later seed flows.
 - `scripts/`: project scripts that are meant to run from pnpm commands.
-- `docs/`: canonical product, schema, and architecture documentation once M0 docs are split.
+- `README.md`: canonical product/setup documentation.
 
 Keep route components thin. Put shared domain behavior in `src/lib/*` and reusable UI in `src/components/*`.
 
@@ -103,5 +103,5 @@ Keep route components thin. Put shared domain behavior in `src/lib/*` and reusab
 - Do not implement complex spellcasting or multi-target automation before the planned milestones.
 - Do not put combat rules in React components.
 - Do not add new state libraries or UI frameworks without a concrete need.
-- Do not make root `Plan.md` canonical long-term; M0 docs should move canonical planning into `docs/`.
+- Do not reintroduce separate roadmap/schema/architecture planning docs unless requested; README is canonical now.
 - Do not commit generated artifacts such as `.next/`, `node_modules/`, coverage output, logs, or `*.tsbuildinfo`.

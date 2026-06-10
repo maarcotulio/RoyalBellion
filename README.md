@@ -1,6 +1,6 @@
 # Royal Bellion
 
-Arcane terminal for D&D 5e creature management and monster combat. Royal Bellion lets Dungeon Masters store creature templates, import JSON stat blocks, roll dice with auditable output, and run multi-monster encounters with combatant HP tracking.
+Royal Bellion is an arcane terminal for D&D 5e creature management and monster combat. Dungeon Masters can store creature templates, import JSON stat blocks, roll dice with auditable output, and run multi-monster encounters with combatant HP tracking.
 
 ## Features
 
@@ -10,6 +10,7 @@ Arcane terminal for D&D 5e creature management and monster combat. Royal Bellion
 - **Dice sandbox** — test expressions, d20 rolls, advantage, and disadvantage
 - **Quick combat** — one attacker against one defender with resistance modes
 - **Encounters** — build a monster party, select attackers and actions, run a full round with combat log and HP tracking
+- **Local MongoDB** — Docker Compose runs a Royal Bellion-named MongoDB database for development
 
 ## Stack
 
@@ -45,8 +46,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Variable | Description |
 |----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
-| `MONGODB_DB` | Database name |
+| `MONGODB_URI` | MongoDB connection string. Local default: `mongodb://royal_bellion:royal_bellion@127.0.0.1:27017/royal_bellion?authSource=admin` |
+| `MONGODB_DB` | Database name. Local default: `royal_bellion` |
 
 See [`.env.example`](.env.example) for defaults.
 
@@ -75,15 +76,13 @@ src/
     ├── combat/       # Combat orchestration
     └── db/           # Mongoose models
 fixtures/             # Sample creature JSON
-docs/                 # Roadmap, schema, architecture
+scripts/              # Validation scripts
+tests/                # Vitest coverage
 ```
 
 ## Documentation
 
-- [AGENTS.md](AGENTS.md) — conventions for AI agents and contributors
-- [docs/ROADMAP.md](docs/ROADMAP.md) — milestones and done criteria
-- [docs/SCHEMA.md](docs/SCHEMA.md) — Royal Bellion creature JSON schema
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — module overview
+README is canonical project documentation. [AGENTS.md](AGENTS.md) keeps agent/contributor implementation rules.
 
 ## License
 
