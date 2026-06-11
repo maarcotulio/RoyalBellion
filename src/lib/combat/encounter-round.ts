@@ -96,6 +96,7 @@ export function runEncounterRound({
       createdAt: new Date().toISOString(),
       attackerName: combatant.instanceName,
       targetName: "Target",
+      targetAc: targetAcEnabled ? targetAc : undefined,
       actionName: action.name,
       outcome,
       toHit: {

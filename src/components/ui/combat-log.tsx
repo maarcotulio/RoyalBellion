@@ -8,6 +8,7 @@ type RollAuditCardProps = {
   readonly toHit?: CombatLogEntry["toHit"];
   readonly damage?: CombatLogEntry["damage"];
   readonly outcome?: CombatLogEntry["outcome"];
+  readonly showDamageTotal?: boolean;
   readonly title?: string;
   readonly subtitle?: string;
   readonly className?: string;
@@ -23,11 +24,12 @@ export function RollAuditCard({
   toHit,
   damage,
   outcome,
+  showDamageTotal = true,
   title,
   subtitle,
   className,
 }: RollAuditCardProps) {
-  const outcomeLabel = outcome ? `(${outcome})` : undefined;
+  const outcomeLabel = outcome ? `(${formatOutcome(outcome)})` : undefined;
 
   return (
     <article
@@ -56,13 +58,23 @@ export function RollAuditCard({
         <div className={cn("grid gap-1", toHit && "mt-4")}>
           <p className="font-semibold text-neutral-100">Damage</p>
           <p className="text-neutral-300">{formatRollExpression(damage)}</p>
-          <p className="font-semibold text-neutral-100">
-            {damage.type === "total" ? `${damage.total} total` : `${damage.total} ${damage.type} damage`}
-          </p>
+          {showDamageTotal ? (
+            <p className="font-semibold text-neutral-100">
+              {damage.type === "total" ? `${damage.total} total` : `${damage.total} ${damage.type} damage`}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </article>
   );
+}
+
+function formatOutcome(outcome: CombatLogEntry["outcome"]) {
+  if (outcome === "fumble") {
+    return "critical miss";
+  }
+
+  return outcome;
 }
 
 export function CombatLog({
@@ -77,10 +89,11 @@ export function CombatLog({
           <RollAuditCard
             key={entry.id}
             title={`${entry.attackerName} -> ${entry.targetName}`}
-            subtitle={`${entry.actionName} · ${entry.outcome}`}
+            subtitle={`${entry.actionName} · ${formatOutcome(entry.outcome)}`}
             toHit={entry.toHit}
             damage={entry.damage}
             outcome={entry.outcome}
+            showDamageTotal={entry.targetAc !== undefined}
             className={cn(
               index === 0 && "animate-log-in border-primary/40",
             )}

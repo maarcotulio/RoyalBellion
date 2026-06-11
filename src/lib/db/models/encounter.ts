@@ -23,6 +23,7 @@ const logEntrySchema = new Schema(
     createdAt: { type: String, required: true },
     attackerName: { type: String, required: true },
     targetName: { type: String, required: true },
+    targetAc: { type: Number },
     actionName: { type: String, required: true },
     outcome: { type: String, required: true, enum: ["hit", "miss", "critical", "roll", "fumble"] },
     toHit: {

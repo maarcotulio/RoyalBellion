@@ -101,6 +101,7 @@ export function QuickCombat({ creatures }: QuickCombatProps) {
         createdAt: new Date().toISOString(),
         attackerName: attacker.name,
         targetName: "Target",
+        targetAc: targetAcEnabled ? parsedTargetAc() : undefined,
         actionName: action.name,
         outcome,
         toHit: {

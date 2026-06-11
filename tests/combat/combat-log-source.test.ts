@@ -8,5 +8,13 @@ describe("combat log source", () => {
     expect(source).toContain("outcomeLabel");
     expect(source).toContain("text-primary");
     expect(source).toContain("To Hit");
+    expect(source).toContain("critical miss");
+  });
+
+  it("shows damage totals only for target AC rolls", () => {
+    const source = readFileSync("src/components/ui/combat-log.tsx", "utf8");
+
+    expect(source).toContain("showDamageTotal");
+    expect(source).toContain("entry.targetAc !== undefined");
   });
 });

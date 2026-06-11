@@ -110,6 +110,7 @@ describe("encounter round engine", () => {
     expect(result.log[0]).toMatchObject({
       attackerName: "Goblin #1",
       targetName: "Target",
+      targetAc: 15,
       actionName: "Shortbow",
       outcome: "hit",
       toHit: {
@@ -151,6 +152,7 @@ describe("encounter round engine", () => {
     expect(result.combatants).toEqual(encounter.combatants);
     expect(result.log[0]).toMatchObject({
       outcome: "roll",
+      targetAc: undefined,
       toHit: {
         rolls: [11],
         modifier: 4,

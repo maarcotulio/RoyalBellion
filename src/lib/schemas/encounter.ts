@@ -35,6 +35,7 @@ export const CombatLogEntrySchema = z
     createdAt: z.string().datetime({ offset: true }),
     attackerName: z.string().min(1),
     targetName: z.string().min(1),
+    targetAc: z.number().int().positive().optional(),
     actionName: z.string().min(1),
     outcome: z.enum(["hit", "miss", "critical", "roll", "fumble"]),
     toHit: CombatLogRollSchema,

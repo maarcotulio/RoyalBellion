@@ -120,7 +120,7 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
         setEncounter(data.encounter);
       } else {
         setEncounter(nextEncounter);
-        setSaveError("Encounter updated locally but could not be saved.");
+        setSaveError(errorMessageFromResponse(data));
       }
     } catch {
       setEncounter(nextEncounter);
@@ -131,6 +131,10 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
   }
 
   async function updateCombatant(combatantId: string, transform: (combatant: Combatant) => Combatant) {
+    if (isSaving) {
+      return;
+    }
+
     const nextEncounter: Encounter = {
       ...encounter,
       combatants: encounter.combatants.map((combatant) =>
@@ -167,6 +171,10 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
   }
 
   async function runRound() {
+    if (isSaving) {
+      return;
+    }
+
     const nextEncounter = runEncounterRound({
       encounter,
       creatures,
@@ -178,6 +186,19 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
     });
 
     await persist(nextEncounter);
+  }
+
+  function errorMessageFromResponse(data: unknown) {
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "error" in data &&
+      typeof data.error === "string"
+    ) {
+      return data.error;
+    }
+
+    return "Encounter updated locally but could not be saved.";
   }
 
   return (
