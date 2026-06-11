@@ -36,7 +36,7 @@ export const CombatLogEntrySchema = z
     attackerName: z.string().min(1),
     targetName: z.string().min(1),
     actionName: z.string().min(1),
-    outcome: z.enum(["hit", "miss", "critical"]),
+    outcome: z.enum(["hit", "miss", "critical", "roll", "fumble"]),
     toHit: CombatLogRollSchema,
     damage: CombatLogDamageSchema.optional(),
   })

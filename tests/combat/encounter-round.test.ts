@@ -86,7 +86,7 @@ const encounter: Encounter = {
 };
 
 describe("encounter round engine", () => {
-  it("runs selected active combatants against combatant targets and logs structured rolls", () => {
+  it("runs selected active combatants against a manual target AC without changing combatant HP", () => {
     const result = runEncounterRound({
       encounter,
       creatures: [goblin],
@@ -96,23 +96,20 @@ describe("encounter round engine", () => {
         "goblin-2": "Shortbow",
         "goblin-3": "Shortbow",
       },
-      targetByCombatantId: {
-        "goblin-1": "goblin-2",
-        "goblin-2": "goblin-1",
-        "goblin-3": "goblin-1",
-      },
+      targetAcEnabled: true,
+      targetAc: 15,
       damageMode: "normal",
       random: fixedRolls([0.6, 0.5, 0.1]),
     });
 
     expect(result.combatants.find((combatant) => combatant.id === "goblin-2")).toMatchObject({
-      currentHp: 4,
-      tempHp: 0,
+      currentHp: 7,
+      tempHp: 3,
     });
     expect(result.log).toHaveLength(2);
     expect(result.log[0]).toMatchObject({
       attackerName: "Goblin #1",
-      targetName: "Goblin #2",
+      targetName: "Target",
       actionName: "Shortbow",
       outcome: "hit",
       toHit: {
@@ -131,9 +128,83 @@ describe("encounter round engine", () => {
     });
     expect(result.log[1]).toMatchObject({
       attackerName: "Goblin #2",
-      targetName: "Goblin #1",
+      targetName: "Target",
       outcome: "miss",
       damage: undefined,
+    });
+  });
+
+  it("logs neutral attack and damage rolls when target AC is disabled", () => {
+    const result = runEncounterRound({
+      encounter,
+      creatures: [goblin],
+      selectedCombatantIds: ["goblin-1"],
+      actionByCombatantId: {
+        "goblin-1": "Shortbow",
+      },
+      targetAcEnabled: false,
+      targetAc: 10,
+      damageMode: "normal",
+      random: fixedRolls([0.5, 0.5]),
+    });
+
+    expect(result.combatants).toEqual(encounter.combatants);
+    expect(result.log[0]).toMatchObject({
+      outcome: "roll",
+      toHit: {
+        rolls: [11],
+        modifier: 4,
+        total: 15,
+      },
+      damage: {
+        rolls: [4],
+        modifier: 2,
+        total: 6,
+      },
+    });
+  });
+
+  it("does not roll damage on a fumble when target AC is disabled", () => {
+    const result = runEncounterRound({
+      encounter,
+      creatures: [goblin],
+      selectedCombatantIds: ["goblin-1"],
+      actionByCombatantId: {
+        "goblin-1": "Shortbow",
+      },
+      targetAcEnabled: false,
+      targetAc: 10,
+      damageMode: "normal",
+      random: fixedRolls([0]),
+    });
+
+    expect(result.log[0]).toMatchObject({
+      outcome: "fumble",
+      damage: undefined,
+    });
+  });
+
+  it("doubles damage dice on a critical when target AC is disabled", () => {
+    const result = runEncounterRound({
+      encounter,
+      creatures: [goblin],
+      selectedCombatantIds: ["goblin-1"],
+      actionByCombatantId: {
+        "goblin-1": "Shortbow",
+      },
+      targetAcEnabled: false,
+      targetAc: 10,
+      damageMode: "normal",
+      random: fixedRolls([0.999, 0.5, 0.5]),
+    });
+
+    expect(result.log[0]).toMatchObject({
+      outcome: "critical",
+      damage: {
+        rolls: [4, 4],
+        modifier: 2,
+        total: 10,
+      },
     });
   });
 });

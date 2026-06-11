@@ -24,7 +24,7 @@ const logEntrySchema = new Schema(
     attackerName: { type: String, required: true },
     targetName: { type: String, required: true },
     actionName: { type: String, required: true },
-    outcome: { type: String, required: true, enum: ["hit", "miss", "critical"] },
+    outcome: { type: String, required: true, enum: ["hit", "miss", "critical", "roll", "fumble"] },
     toHit: {
       expression: { type: String, required: true },
       rolls: { type: [Number], required: true },

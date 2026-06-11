@@ -78,7 +78,8 @@ export function formatRollExpression({
   readonly rolls: readonly number[];
   readonly modifier: number;
 }) {
-  const baseExpression = expression.replace(/[+-]\d+$/, "");
+  const parsed = parseDice(expression);
+  const baseExpression = `${rolls.length}d${parsed.sides}`;
 
   return `${baseExpression} [${rolls.join(", ")}]${formatModifier(modifier)}`;
 }

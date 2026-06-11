@@ -23,14 +23,6 @@ type EncounterResponse = {
   readonly encounter: Encounter;
 };
 
-function createId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 function isEncounterResponse(value: unknown): value is EncounterResponse {
   return (
     typeof value === "object" &&
@@ -89,7 +81,7 @@ export function EncounterForm({ creatures }: EncounterFormProps) {
     try {
       const now = new Date().toISOString();
       const payload: Encounter = {
-        id: createId(name),
+        id: crypto.randomUUID(),
         name,
         combatants: [...combatants],
         log: [],

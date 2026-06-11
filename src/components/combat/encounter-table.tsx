@@ -38,10 +38,6 @@ function defaultActionName(creature: Creature | undefined) {
   return creature?.actions.find((action) => action.attackBonus !== undefined && action.damage?.[0])?.name ?? "";
 }
 
-function defaultTargetId(combatantId: string, combatants: readonly Combatant[]) {
-  return combatants.find((combatant) => combatant.id !== combatantId && combatant.currentHp > 0)?.id ?? "";
-}
-
 function downloadEncounter(encounter: Encounter) {
   const blob = new Blob([JSON.stringify(encounter, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -68,16 +64,10 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
       }),
     ),
   );
-  const [targetByCombatantId, setTargetByCombatantId] = useState<Readonly<Record<string, string>>>(
-    Object.fromEntries(
-      initialEncounter.combatants.map((combatant) => [
-        combatant.id,
-        defaultTargetId(combatant.id, initialEncounter.combatants),
-      ]),
-    ),
-  );
   const [hpInputByCombatantId, setHpInputByCombatantId] = useState<Readonly<Record<string, string>>>({});
   const [damageMode, setDamageMode] = useState<ResistanceMode>("normal");
+  const [targetAcEnabled, setTargetAcEnabled] = useState(true);
+  const [targetAc, setTargetAc] = useState("15");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -94,13 +84,6 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
     }));
   }
 
-  function setTarget(combatantId: string, targetId: string) {
-    setTargetByCombatantId((current) => ({
-      ...current,
-      [combatantId]: targetId,
-    }));
-  }
-
   function setHpInput(combatantId: string, value: string) {
     setHpInputByCombatantId((current) => ({
       ...current,
@@ -113,6 +96,12 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
     const parsedValue = Number(rawValue);
 
     return Number.isFinite(parsedValue) ? Math.max(0, Math.floor(parsedValue)) : 0;
+  }
+
+  function parsedTargetAc() {
+    const parsedValue = Number(targetAc);
+
+    return Number.isFinite(parsedValue) ? Math.max(1, Math.floor(parsedValue)) : 10;
   }
 
   async function persist(nextEncounter: Encounter) {
@@ -183,7 +172,8 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
       creatures,
       selectedCombatantIds: selectedIds,
       actionByCombatantId,
-      targetByCombatantId,
+      targetAcEnabled,
+      targetAc: parsedTargetAc(),
       damageMode,
     });
 
@@ -199,17 +189,34 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
               <p className="font-mono text-sm uppercase tracking-[0.18em] text-primary">Party</p>
               <CardTitle>Combatants</CardTitle>
             </div>
-            <SelectField
-              label="Damage mode"
-              value={damageMode}
-              onChange={(value) => setDamageMode(value as ResistanceMode)}
-              className="w-full sm:w-44"
-            >
-              <option value="normal">Normal</option>
-              <option value="half">Half</option>
-              <option value="double">Double</option>
-              <option value="immune">Immune</option>
-            </SelectField>
+            <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-[120px_176px] sm:items-end">
+              <div className="grid gap-2">
+                <CheckboxField
+                  id="encounter-target-ac-enabled"
+                  label="Target AC"
+                  checked={targetAcEnabled}
+                  onCheckedChange={setTargetAcEnabled}
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  value={targetAc}
+                  onChange={(event) => setTargetAc(event.target.value)}
+                  disabled={!targetAcEnabled}
+                  aria-label="Target AC"
+                />
+              </div>
+              <SelectField
+                label="Damage mode"
+                value={damageMode}
+                onChange={(value) => setDamageMode(value as ResistanceMode)}
+              >
+                <option value="normal">Normal</option>
+                <option value="half">Half</option>
+                <option value="double">Double</option>
+                <option value="immune">Immune</option>
+              </SelectField>
+            </div>
           </CardHeader>
           <CardContent className="grid gap-3">
             {encounter.combatants.map((combatant) => {
@@ -220,7 +227,7 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
                   key={combatant.id}
                   className="rounded-lg border border-border bg-background p-4"
                 >
-                  <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1fr)_180px_180px] xl:items-center">
+                  <div className="grid gap-4 xl:grid-cols-[auto_minmax(0,1fr)_220px] xl:items-center">
                     <CheckboxField
                       id={`combatant-${combatant.id}`}
                       label="Active"
@@ -250,20 +257,6 @@ export function EncounterTable({ initialEncounter, creatures }: EncounterTablePr
                           {action.name}
                         </option>
                       ))}
-                    </SelectField>
-                    <SelectField
-                      label="Target"
-                      value={targetByCombatantId[combatant.id] ?? ""}
-                      onChange={(value) => setTarget(combatant.id, value)}
-                    >
-                      <option value="">None</option>
-                      {encounter.combatants
-                        .filter((candidate) => candidate.id !== combatant.id)
-                        .map((candidate) => (
-                          <option key={candidate.id} value={candidate.id}>
-                            {candidate.instanceName}
-                          </option>
-                        ))}
                     </SelectField>
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-[120px_repeat(3,minmax(0,1fr))]">

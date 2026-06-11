@@ -7,7 +7,8 @@ type RunEncounterRoundInput = {
   readonly creatures: readonly Creature[];
   readonly selectedCombatantIds: readonly string[];
   readonly actionByCombatantId: Readonly<Record<string, string>>;
-  readonly targetByCombatantId: Readonly<Record<string, string>>;
+  readonly targetAcEnabled: boolean;
+  readonly targetAc: number;
   readonly damageMode: ResistanceMode;
   readonly random?: RandomSource;
 };
@@ -33,69 +34,75 @@ export function runEncounterRound({
   creatures,
   selectedCombatantIds,
   actionByCombatantId,
-  targetByCombatantId,
+  targetAcEnabled,
+  targetAc,
   damageMode,
   random,
 }: RunEncounterRoundInput): Encounter {
   const creatureById = new Map(creatures.map((creature) => [creature.id, creature]));
   const selectedIds = new Set(selectedCombatantIds);
-  let combatants = [...encounter.combatants];
   const log = [...encounter.log];
   let logIndex = 0;
 
-  for (const combatant of combatants) {
+  for (const combatant of encounter.combatants) {
     if (!selectedIds.has(combatant.id) || !combatant.isActive || combatant.currentHp <= 0) {
       continue;
     }
 
     const creature = creatureById.get(combatant.creatureId);
     const actionName = actionByCombatantId[combatant.id];
-    const targetId = targetByCombatantId[combatant.id];
-    const target = combatants.find((candidate) => candidate.id === targetId);
-    const targetCreature = creatures.find((candidate) => candidate.id === target?.creatureId);
     const action =
       creature?.actions.find((candidate) => candidate.name === actionName) ??
       creature?.actions.find((candidate) => candidate.attackBonus !== undefined && candidate.damage?.[0]);
 
-    if (!creature || !action || action.attackBonus === undefined || !target || !targetCreature) {
+    if (!creature || !action || action.attackBonus === undefined) {
       continue;
     }
 
-    const attack = resolveAttack({
+    const attackRoll = resolveAttack({
       attackBonus: action.attackBonus,
-      targetAc: targetCreature.ac.value,
+      targetAc,
       random,
     });
     const damageDice = action.damage?.[0]?.dice;
     const damageType = action.damage?.[0]?.type ?? "damage";
+    const shouldRollDamage = targetAcEnabled
+      ? attackRoll.hit
+      : !attackRoll.roll.isFumble;
+    const critical = attackRoll.critical;
     const damage =
-      attack.hit && damageDice
+      shouldRollDamage && damageDice
         ? resolveDamage({
             dice: damageDice,
-            critical: attack.critical,
+            critical,
             mode: damageMode,
             random,
           })
         : undefined;
-
-    if (damage) {
-      combatants = combatants.map((candidate) =>
-        candidate.id === target.id ? applyDamageToCombatant(candidate, damage.total) : candidate,
-      );
-    }
+    const outcome = targetAcEnabled
+      ? critical
+        ? "critical"
+        : attackRoll.hit
+          ? "hit"
+          : "miss"
+      : critical
+        ? "critical"
+        : attackRoll.roll.isFumble
+          ? "fumble"
+          : "roll";
 
     log.push({
       id: createLogId(logIndex),
       createdAt: new Date().toISOString(),
       attackerName: combatant.instanceName,
-      targetName: target.instanceName,
+      targetName: "Target",
       actionName: action.name,
-      outcome: attack.critical ? "critical" : attack.hit ? "hit" : "miss",
+      outcome,
       toHit: {
         expression: "1d20",
-        rolls: [...attack.roll.rolls],
-        modifier: attack.roll.modifier,
-        total: attack.roll.total,
+        rolls: [...attackRoll.roll.rolls],
+        modifier: attackRoll.roll.modifier,
+        total: attackRoll.roll.total,
       },
       damage: damage
         ? {
@@ -114,7 +121,7 @@ export function runEncounterRound({
 
   return {
     ...encounter,
-    combatants,
+    combatants: encounter.combatants,
     log,
     updatedAt: new Date().toISOString(),
   };

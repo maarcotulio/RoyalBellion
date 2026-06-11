@@ -14,6 +14,44 @@ function parseBackup(input: unknown) {
   return RoyalBellionBackupSchema.parse(input);
 }
 
+function normalizeEncounterDocument(document: unknown) {
+  if (typeof document !== "object" || document === null || !("log" in document)) {
+    return document;
+  }
+
+  const candidate = document as { readonly log?: unknown };
+
+  if (!Array.isArray(candidate.log)) {
+    return document;
+  }
+
+  return {
+    ...document,
+    log: candidate.log.map((entry) => {
+      if (typeof entry !== "object" || entry === null || !("damage" in entry)) {
+        return entry;
+      }
+
+      const logEntry = entry as { readonly damage?: unknown };
+      const damage = logEntry.damage;
+
+      if (
+        typeof damage !== "object" ||
+        damage === null ||
+        ("expression" in damage && typeof damage.expression === "string")
+      ) {
+        return entry;
+      }
+
+      const entryWithoutDamage = Object.fromEntries(
+        Object.entries(logEntry).filter(([key]) => key !== "damage"),
+      );
+
+      return entryWithoutDamage;
+    }),
+  };
+}
+
 export async function exportRoyalBellionBackup(): Promise<RoyalBellionBackup> {
   await connectToMongo();
 
@@ -27,7 +65,9 @@ export async function exportRoyalBellionBackup(): Promise<RoyalBellionBackup> {
     exportedAt: new Date().toISOString(),
     data: {
       creatures: creatureDocuments.map((document) => CreatureSchema.parse(document)),
-      encounters: encounterDocuments.map((document) => EncounterSchema.parse(document)),
+      encounters: encounterDocuments.map((document) =>
+        EncounterSchema.parse(normalizeEncounterDocument(document)),
+      ),
     },
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Dices, HeartPulse } from "lucide-react";
+import { Dices } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckboxField } from "@/components/ui/checkbox-field";
 import { CombatLog } from "@/components/ui/combat-log";
 import { EmptyState } from "@/components/ui/empty-state";
-import { HpBar } from "@/components/ui/hp-bar";
+import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
-import { resolveAttack, resolveDamage, type ResistanceMode } from "@/lib/dice";
+import { resolveAttack, resolveDamage, rollD20, type ResistanceMode } from "@/lib/dice";
 import type { Creature, CreatureAction } from "@/lib/schemas/creature";
 import type { CombatLogEntry } from "@/lib/schemas/encounter";
 
@@ -33,24 +33,16 @@ function getDamageDice(action: CreatureAction | undefined) {
 
 export function QuickCombat({ creatures }: QuickCombatProps) {
   const [attackerId, setAttackerId] = useState(creatures[0]?.id ?? "");
-  const [targetId, setTargetId] = useState(creatures[1]?.id ?? creatures[0]?.id ?? "");
   const attacker = creatures.find((creature) => creature.id === attackerId);
-  const target = creatures.find((creature) => creature.id === targetId);
   const defaultAction = firstDamagingAction(attacker);
   const [actionName, setActionName] = useState(defaultAction?.name ?? "");
   const action = findAction(attacker, actionName) ?? defaultAction;
-  const [targetHp, setTargetHp] = useState(target?.hp.average ?? 0);
   const [advantage, setAdvantage] = useState(false);
   const [disadvantage, setDisadvantage] = useState(false);
   const [mode, setMode] = useState<ResistanceMode>("normal");
+  const [targetAcEnabled, setTargetAcEnabled] = useState(true);
+  const [targetAc, setTargetAc] = useState("15");
   const [log, setLog] = useState<readonly CombatLogEntry[]>([]);
-
-  function handleTargetChange(nextTargetId: string) {
-    const nextTarget = creatures.find((creature) => creature.id === nextTargetId);
-
-    setTargetId(nextTargetId);
-    setTargetHp(nextTarget?.hp.average ?? 0);
-  }
 
   function handleAttackerChange(nextAttackerId: string) {
     const nextAttacker = creatures.find((creature) => creature.id === nextAttackerId);
@@ -60,46 +52,62 @@ export function QuickCombat({ creatures }: QuickCombatProps) {
     setActionName(nextAction?.name ?? "");
   }
 
+  function parsedTargetAc() {
+    const parsedValue = Number(targetAc);
+
+    return Number.isFinite(parsedValue) ? Math.max(1, Math.floor(parsedValue)) : 10;
+  }
+
   function runAttack() {
-    if (!attacker || !target || !action || action.attackBonus === undefined) {
+    if (!attacker || !action || action.attackBonus === undefined) {
       return;
     }
 
-    const attack = resolveAttack({
-      attackBonus: action.attackBonus,
-      targetAc: target.ac.value,
-      advantage,
-      disadvantage,
-    });
+    const attack = targetAcEnabled
+      ? resolveAttack({
+          attackBonus: action.attackBonus,
+          targetAc: parsedTargetAc(),
+          advantage,
+          disadvantage,
+        })
+      : undefined;
+    const attackRoll = attack?.roll ?? rollD20({ modifier: action.attackBonus, advantage, disadvantage });
     const damageDice = getDamageDice(action);
-    let nextHp = targetHp;
+    const critical = attack?.critical ?? attackRoll.isCritical;
+    const shouldRollDamage = targetAcEnabled ? attack?.hit === true : !attackRoll.isFumble;
     const damage =
-      attack.hit && damageDice
+      shouldRollDamage && damageDice
         ? resolveDamage({
             dice: damageDice,
-            critical: attack.critical,
+            critical,
             mode,
           })
         : undefined;
+    const outcome = targetAcEnabled
+      ? critical
+        ? "critical"
+        : attack?.hit
+          ? "hit"
+          : "miss"
+      : critical
+        ? "critical"
+        : attackRoll.isFumble
+          ? "fumble"
+          : "roll";
 
-    if (damage) {
-      nextHp = Math.max(0, targetHp - damage.total);
-    }
-
-    setTargetHp(nextHp);
     setLog((entries) => [
       {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         attackerName: attacker.name,
-        targetName: target.name,
+        targetName: "Target",
         actionName: action.name,
-        outcome: attack.critical ? "critical" : attack.hit ? "hit" : "miss",
+        outcome,
         toHit: {
           expression: "1d20",
-          rolls: [...attack.roll.rolls],
-          modifier: attack.roll.modifier,
-          total: attack.roll.total,
+          rolls: [...attackRoll.rolls],
+          modifier: attackRoll.modifier,
+          total: attackRoll.total,
         },
         damage: damage
           ? {
@@ -149,13 +157,6 @@ export function QuickCombat({ creatures }: QuickCombatProps) {
                 </option>
               ))}
             </SelectField>
-            <SelectField label="Target" value={targetId} onChange={handleTargetChange}>
-              {creatures.map((creature) => (
-                <option key={creature.id} value={creature.id}>
-                  {creature.name}
-                </option>
-              ))}
-            </SelectField>
             <SelectField label="Action" value={action?.name ?? ""} onChange={setActionName}>
               {attacker?.actions.map((creatureAction) => (
                 <option key={creatureAction.name} value={creatureAction.name}>
@@ -164,15 +165,31 @@ export function QuickCombat({ creatures }: QuickCombatProps) {
               ))}
             </SelectField>
             <SelectField
-              label="Damage mode"
-              value={mode}
-              onChange={(value) => setMode(value as ResistanceMode)}
-            >
-              <option value="normal">Normal</option>
-              <option value="half">Half</option>
-              <option value="double">Double</option>
-              <option value="immune">Immune</option>
-            </SelectField>
+                label="Damage mode"
+                value={mode}
+                onChange={(value) => setMode(value as ResistanceMode)}
+              >
+                <option value="normal">Normal</option>
+                <option value="half">Half</option>
+                <option value="double">Double</option>
+                <option value="immune">Immune</option>
+              </SelectField>
+            <div className="grid gap-2">
+              <CheckboxField
+                id="quick-target-ac-enabled"
+                label="Target AC"
+                checked={targetAcEnabled}
+                onCheckedChange={setTargetAcEnabled}
+              />
+              <Input
+                type="number"
+                min={1}
+                value={targetAc}
+                onChange={(event) => setTargetAc(event.target.value)}
+                disabled={!targetAcEnabled}
+                aria-label="Target AC"
+              />
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-6">
@@ -198,21 +215,6 @@ export function QuickCombat({ creatures }: QuickCombatProps) {
       </Card>
 
       <aside className="grid content-start gap-4">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <HeartPulse className="size-5 text-primary" aria-hidden="true" />
-              <CardTitle>{target?.name ?? "Target"}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-sm text-muted-foreground">
-              HP {targetHp}/{target?.hp.average ?? 0}
-            </p>
-            <HpBar current={targetHp} max={target?.hp.average ?? 1} className="mt-4" />
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <p className="font-mono text-sm uppercase tracking-[0.18em] text-primary">Log</p>

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 type RollAuditCardProps = {
   readonly toHit?: CombatLogEntry["toHit"];
   readonly damage?: CombatLogEntry["damage"];
+  readonly outcome?: CombatLogEntry["outcome"];
   readonly title?: string;
   readonly subtitle?: string;
   readonly className?: string;
@@ -21,10 +22,13 @@ type CombatLogProps = {
 export function RollAuditCard({
   toHit,
   damage,
+  outcome,
   title,
   subtitle,
   className,
 }: RollAuditCardProps) {
+  const outcomeLabel = outcome ? `(${outcome})` : undefined;
+
   return (
     <article
       className={cn(
@@ -37,7 +41,12 @@ export function RollAuditCard({
 
       {toHit ? (
         <div className="grid gap-1">
-          <p className="font-semibold text-neutral-100">To Hit</p>
+          <p className="font-semibold text-neutral-100">
+            To Hit{" "}
+            {outcomeLabel ? (
+              <span className="text-primary">{outcomeLabel}</span>
+            ) : null}
+          </p>
           <p className="text-neutral-300">{formatRollExpression(toHit)}</p>
           <p className="font-semibold text-neutral-100">{toHit.total}</p>
         </div>
@@ -71,6 +80,7 @@ export function CombatLog({
             subtitle={`${entry.actionName} · ${entry.outcome}`}
             toHit={entry.toHit}
             damage={entry.damage}
+            outcome={entry.outcome}
             className={cn(
               index === 0 && "animate-log-in border-primary/40",
             )}

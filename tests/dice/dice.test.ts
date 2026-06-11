@@ -31,6 +31,9 @@ describe("dice engine", () => {
       "1d20 [8] + 6",
     );
     expect(formatRollExpression({ expression: "1d8", rolls: [2], modifier: 0 })).toBe("1d8 [2]");
+    expect(formatRollExpression({ expression: "1d6+3", rolls: [6, 2], modifier: 3 })).toBe(
+      "2d6 [6, 2] + 3",
+    );
   });
 
   it("parses a dice expression with positive modifier", () => {
